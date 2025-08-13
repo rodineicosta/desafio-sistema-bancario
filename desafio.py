@@ -1,6 +1,43 @@
 import textwrap
 from abc import ABC, abstractclassmethod, abstractproperty
 from datetime import datetime
+import functools
+
+def log_transacao(func):
+    """Decorador que registra data, hora e tipo de transação."""
+    @functools.wraps(func)
+    def wrapper(*args, **kwargs):
+        data_hora = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+        print(f"🕒 [{data_hora}] Executando '{func.__name__.replace('_', ' ').title()}'")
+        resultado = func(*args, **kwargs)
+        print(f"✅ [{data_hora}] '{func.__name__.replace('_', ' ').title()}' finalizada")
+        return resultado
+    return wrapper
+
+
+class ContaIterador:
+    """Iterador personalizado para contas do banco."""
+
+    def __init__(self, contas):
+        self.contas = contas
+        self._index = 0
+
+    def __iter__(self):
+        return self
+
+    def __next__(self):
+        try:
+            conta = self.contas[self._index]
+            return f"""\
+            Agência:\t{conta.agencia}
+            Número:\t\t{conta.numero}
+            Titular:\t{conta.cliente.nome}
+            Saldo:\t\tR$ {conta.saldo:.2f}
+            """
+        except IndexError:
+            raise StopIteration
+        finally:
+            self._index += 1
 
 
 class Cliente:
@@ -155,6 +192,21 @@ class Historico:
             }
         )
 
+    def gerar_relatorio(self, tipo_transacao=None):
+        """Gerador que permite iterar sobre as transações, opcionalmente filtradas por tipo."""
+        for transacao in self._transacoes:
+            if tipo_transacao is None or transacao["tipo"].lower() == tipo_transacao.lower():
+                yield transacao
+
+    def transacoes_do_dia(self, data=None):
+        """Gerador que retorna transações de um dia específico."""
+        if data is None:
+            data = datetime.now().strftime("%d/%m/%Y")
+
+        for transacao in self._transacoes:
+            if transacao["data"].split()[0] == data:
+                yield transacao
+
 
 class Transacao(ABC):
     """Classe abstrata para transações."""
@@ -216,6 +268,7 @@ def menu():
 [5]\tNovo Cliente
 [6]\tListar Contas
 [7]\tListar Clientes
+[8]\tRelatório de Transações
 [0]\tSair
 => """
     return input(textwrap.dedent(menu_texto))
@@ -238,6 +291,7 @@ def recuperar_conta_cliente(cliente):
     return cliente.contas[0]
 
 
+@log_transacao
 def depositar(clientes):
     """Realiza operação de depósito."""
     cpf = input("Informe o CPF do cliente: ")
@@ -257,6 +311,7 @@ def depositar(clientes):
     cliente.realizar_transacao(conta, transacao)
 
 
+@log_transacao
 def sacar(clientes):
     """Realiza operação de saque."""
     cpf = input("Informe o CPF do cliente: ")
@@ -304,6 +359,7 @@ def exibir_extrato(clientes):
     print("="*48)
 
 
+@log_transacao
 def criar_cliente(clientes):
     """Cria um novo cliente."""
     cpf = input("Informe o CPF: ")
@@ -333,6 +389,7 @@ def criar_cliente(clientes):
     print("\n=== Cliente criado com sucesso! ===")
 
 
+@log_transacao
 def criar_conta(numero_conta, clientes, contas):
     """Cria uma nova conta."""
     cpf = input("Informe o CPF do cliente: ")
@@ -350,14 +407,70 @@ def criar_conta(numero_conta, clientes, contas):
 
 
 def listar_contas(contas):
-    """Lista todas as contas."""
+    """Lista todas as contas usando iterador personalizado."""
     if not contas:
         print("\nNenhuma conta cadastrada.")
         return
 
-    for conta in contas:
+    print("\n" + "="*60 + " CONTAS CADASTRADAS " + "="*60)
+
+    # Usando o iterador personalizado.
+    for dados_conta in ContaIterador(contas):
         print("=" * 100)
-        print(textwrap.dedent(str(conta)))
+        print(textwrap.dedent(dados_conta))
+
+
+def relatorio_transacoes(clientes):
+    """Gera relatório de transações usando gerador."""
+    cpf = input("Informe o CPF do cliente: ")
+    cliente = filtrar_cliente(cpf, clientes)
+
+    if not cliente:
+        print("\nCliente não encontrado!")
+        return
+
+    conta = recuperar_conta_cliente(cliente)
+    if not conta:
+        return
+
+    print("\n" + "="*15 + " OPÇÕES DE RELATÓRIO " + "="*15)
+    print("1 - Todas as transações")
+    print("2 - Apenas depósitos")
+    print("3 - Apenas saques")
+    print("4 - Transações do dia")
+
+    opcao = input("Escolha uma opção: ")
+
+    print("\n" + "="*20 + " RELATÓRIO " + "="*20)
+
+    if opcao == "1":
+        print("📋 Todas as Transações:")
+        for transacao in conta.historico.gerar_relatorio():
+            print(f"  • {transacao['tipo']}: R$ {transacao['valor']:.2f} - {transacao['data']}")
+
+    elif opcao == "2":
+        print("📈 Apenas Depósitos:")
+        for transacao in conta.historico.gerar_relatorio("Deposito"):
+            print(f"  • {transacao['tipo']}: R$ {transacao['valor']:.2f} - {transacao['data']}")
+
+    elif opcao == "3":
+        print("📉 Apenas Saques:")
+        for transacao in conta.historico.gerar_relatorio("Saque"):
+            print(f"  • {transacao['tipo']}: R$ {transacao['valor']:.2f} - {transacao['data']}")
+
+    elif opcao == "4":
+        data = input("Informe a data (dd/mm/aaaa) ou deixe em branco para hoje: ").strip()
+        if not data:
+            data = None
+        print(f"📅 Transações do dia {data or 'hoje'}:")
+        for transacao in conta.historico.transacoes_do_dia(data):
+            print(f"  • {transacao['tipo']}: R$ {transacao['valor']:.2f} - {transacao['data']}")
+
+    else:
+        print("Opção inválida!")
+        return
+
+    print("="*48)
 
 
 def listar_clientes(clientes):
@@ -414,6 +527,9 @@ def main():
 
         elif opcao == "7":
             listar_clientes(clientes)
+
+        elif opcao == "8":
+            relatorio_transacoes(clientes)
 
         elif opcao == "0":
             break
