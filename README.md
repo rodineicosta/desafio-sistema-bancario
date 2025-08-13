@@ -1,10 +1,10 @@
-# 🏦 Sistema Bancário em Python - Versão 4.0 (Avançado)
+# 🏦 Sistema Bancário em Python - Versão 4.1
 
 ## 📖 Descrição do Projeto
 
-Este projeto é parte do desafio **Sistema Bancário com Python**, da Formação **Santander 2025 - Back-End com Python**. A **Versão 4.0** implementa funcionalidades avançadas como **decoradores**, **geradores** e **iteradores**, mantendo toda a arquitetura POO da versão anterior.
+Este projeto é parte do desafio **Lidando com Data, Hora e Fuso Horário no Python**, da Formação **Santander 2025 - Back-End com Python**. A **Versão 4.1** implementa o limite de dez (10) transações diárias para uma conta, com exibição de aviso sobre o referido limite excedido para o dia.
 
-A **Versão 4.0** adiciona recursos avançados de Python como logging automático de transações, relatórios inteligentes com filtros, e iteração personalizada sobre as contas do banco.
+A exibição de data e hora no extrato já estava implementada nas versões anteriores ao desafio atual.
 
 ## ⚡ Funcionalidades
 
@@ -22,13 +22,42 @@ A **Versão 4.0** adiciona recursos avançados de Python como logging automátic
 
 ### 🚀 Funcionalidades Avançadas
 
-#### 🎯 **Decorador de Log**
+#### 🕐 **Gerenciamento de Data/Hora**
+
+- **Timestamps automáticos**: Todas as transações recebem timestamp automático no formato `dd/mm/aaaa hh:mm:ss`;
+- **Controle diário**: Sistema distingue transações por data para aplicar regras de negócio;
+- **Extrato temporal**: Visualização cronológica de todas as operações.
+
+#### 📊 **Limite de Transações Diárias**
+
+- **10 transações por dia**: Substituição do antigo limite de 3 saques por um limite mais flexível;
+- **Validação centralizada**: Controle realizado na classe `Cliente` via método `realizar_transacao()`;
+- **Mensagens informativas**: Feedback claro sobre status das transações e limites.
+
+#### 🎯 **Decorador de Log (@log_transacao)**
+
+```python
+@log_transacao
+def registrar(self, conta):
+    # Funcionalidade com log automático.
+```
 
 - **Função**: Registra automaticamente data/hora de todas as transações;
 - **Aplicação**: Todas as funções de transação (depósito, saque, criação de conta, etc.);
 - **Formato**: `🕒 [DD/MM/AAAA HH:MM:SS] Executando 'Nome da Operação'`.
 
-#### 🔄 **Gerador de Relatórios**
+#### 🔄 **Gerador de Relatórios (yield)**
+
+```python
+def gerar_relatorio(self):
+    for transacao in self._transacoes:
+        yield transacao
+
+def transacoes_do_dia(self, data=None):
+    for transacao in self._transacoes:
+        if data_transacao == data_hoje:
+            yield transacao
+```
 
 - **Função**: Permite iterar sobre transações com filtros específicos;
 - **Filtros Disponíveis**:
@@ -38,7 +67,13 @@ A **Versão 4.0** adiciona recursos avançados de Python como logging automátic
   - Transações por data específica.
 - **Vantagem**: Economia de memória com lazy evaluation.
 
-#### 🔍 **Iterador Personalizado**
+#### 🔍 **Iterador Personalizado (ContaIterador)**
+
+```python
+# Permite iteração sobre contas com formatação personalizada.
+for conta_info in ContaIterador(contas):
+    print(conta_info)
+```
 
 - **Classe**: `ContaIterador`;
 - **Função**: Itera sobre todas as contas retornando dados estruturados;
@@ -49,9 +84,9 @@ A **Versão 4.0** adiciona recursos avançados de Python como logging automátic
 
 - **Python 3.8+**;
 - **ABC (Abstract Base Classes)** - Para classes abstratas;
-- **datetime** - Para timestamps das transações;
-- **textwrap** - Para formatação do menu;
-- **functools** - Para manutenção da identidade original da função decorada;
+- **`datetime`** - Para manipulação de data/hora;
+- **`textwrap`** - Para formatação do menu;
+- **`functools`** - Para Decorators avançados;
 - **POO** - Programação Orientada a Objetos;
 - **Type Hints** - Para melhor documentação do código.
 
@@ -76,6 +111,18 @@ cd desafio-sistema-bancario
 python desafio.py
 ```
 
+### 3️⃣ Demonstração Completa
+
+```bash
+python demo_v4.py
+```
+
+### 4️⃣ Testes Automatizados
+
+```bash
+python teste_v4.py
+```
+
 ## 💡 Como Usar
 
 ### 🔸 Fluxo Recomendado
@@ -87,7 +134,7 @@ python desafio.py
 5. **Verificar Extrato**: Use `[3]` para ver movimentações;
 6. **Relatório de Transações**: Use `[8]` para ver relatórios.
 
-### 🔸 Exemplo de Uso Completo
+### 🔸 Exemplo de Uso
 
 ```
 ```text
@@ -138,6 +185,49 @@ Informe o endereço: Rua A, 123 - Centro - São Paulo/SP
 - Gerador de relatório;
 - Iterador personalizado.
 
+### v4.1 - Limite Flexível de Transações e Manipulação de Data e Hora
+
+- Limite de 10 transações diárias;
+- Implementado controle por data/hora;
+- Centralizada validação no método `Cliente.realizar_transacao()`;
+- Melhorado extrato com *timestamps* detalhados;
+- Mantidas todas as funcionalidades v4.0 (decorators/generators/iterators).
+
+---
+
+## 📚 Conceitos Demonstrados
+
+### Python Avançado
+
+- **Decorators**: `@log_transacao` com `@functools.wraps`;
+- **Generators**: `yield` para eficiência de memória;
+- **Iterators**: Protocolo `__iter__` e `__next__`.
+
+### Data/Hora
+
+- **datetime.now()**: Timestamps automáticos;
+- **strftime()**: Formatação personalizada;
+- **Comparação de datas**: Filtragem por período.
+
+### POO
+
+- **Herança**: Classes base abstratas;
+- **Polimorfismo**: Transações especializadas;
+- **Encapsulamento**: Dados protegidos.
+
+---
+
+## 🎯 Objetivos Alcançados
+
+- ✅ **Implementação completa** do desafio "Lidando com Data, Hora e Fuso Horário";
+- ✅ **Limite flexível** de 10 transações diárias;
+- ✅ **Controle temporal** preciso das operações;
+- ✅ **Compatibilidade** com funcionalidades v4.0;
+- ✅ **Código testado** e documentado;
+- ✅ **Arquitetura escalável** para futuras expansões.
+
+---
+
 ## 🤝 Contribuição
 
 1. Faça um fork do projeto;
@@ -180,4 +270,4 @@ Para acompanhar a evolução do desafio da versão anterior, veja o arquivo [REA
 
 ### 🚀 Desenvolvido como parte do Desafio DIO + Santander 2025
 
-Sistema Bancário v4.0 - Implementado com Decoradores, Geradores e Iteradores com Python
+Sistema Bancário v4.1 - Lidando com Data, Hora e Fuso Horário no Python
