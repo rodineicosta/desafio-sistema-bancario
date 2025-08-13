@@ -3,18 +3,6 @@ from abc import ABC, abstractclassmethod, abstractproperty
 from datetime import datetime
 import functools
 
-def log_transacao(func):
-    """Decorador que registra data, hora e tipo de transação."""
-    @functools.wraps(func)
-    def wrapper(*args, **kwargs):
-        data_hora = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
-        print(f"🕒 [{data_hora}] Executando '{func.__name__.replace('_', ' ').title()}'")
-        resultado = func(*args, **kwargs)
-        print(f"✅ [{data_hora}] '{func.__name__.replace('_', ' ').title()}' finalizada")
-        return resultado
-    return wrapper
-
-
 class ContaIterador:
     """Iterador personalizado para contas do banco."""
 
@@ -48,8 +36,18 @@ class Cliente:
         self.contas = []
 
     def realizar_transacao(self, conta, transacao):
-        """Executa uma transação na conta do cliente."""
+        """Executa uma transação na conta do cliente com limite diário."""
+        # Verificar limite de 10 transações por dia.
+        data_hoje = datetime.now().strftime("%d/%m/%Y")
+        transacoes_hoje = list(conta.historico.transacoes_do_dia(data_hoje))
+
+        if len(transacoes_hoje) >= 10:
+            print(f"\nOperação falhou! Você excedeu o número de transações permitidas para hoje ({len(transacoes_hoje)}/10).")
+            print(f"Tente novamente amanhã.")
+            return False
+
         transacao.registrar(conta)
+        return True
 
     def adicionar_conta(self, conta):
         """Adiciona uma conta à lista de contas do cliente."""
@@ -131,38 +129,26 @@ class Conta:
 
 
 class ContaCorrente(Conta):
-    """Classe para contas correntes com limite e limite de saques."""
+    """Classe para contas correntes com limite de saque."""
 
-    def __init__(self, numero, cliente, limite=500, limite_saques=3):
+    def __init__(self, numero, cliente, limite=500):
         super().__init__(numero, cliente)
         self._limite = limite
-        self._limite_saques = limite_saques
 
     @classmethod
-    def nova_conta(cls, cliente, numero, limite=500, limite_saques=3):
+    def nova_conta(cls, cliente, numero, limite=500):
         """Método de classe para criar uma nova conta corrente."""
-        return cls(numero, cliente, limite, limite_saques)
+        return cls(numero, cliente, limite)
 
     def sacar(self, valor):
-        """Realiza saque com verificação de limite."""
-        numero_saques = len(
-            [transacao for transacao in self.historico.transacoes
-             if transacao["tipo"] == Saque.__name__]
-        )
-
+        """Realiza saque com verificação de limite de valor."""
         excedeu_limite = valor > self._limite
-        excedeu_saques = numero_saques >= self._limite_saques
 
         if excedeu_limite:
             print(f"\nOperação falhou! O valor do saque excede o limite de R$ {self._limite:.2f}.")
-
-        elif excedeu_saques:
-            print(f"\nOperação falhou! Número máximo de saques diários ({self._limite_saques}) excedido.")
-
+            return False
         else:
             return super().sacar(valor)
-
-        return False
 
     def __str__(self):
         return f"""\
@@ -256,6 +242,16 @@ class Deposito(Transacao):
         if sucesso_transacao:
             conta.historico.adicionar_transacao(self)
 
+def log_transacao(func):
+    """Decorador que registra data, hora e tipo de transação."""
+    @functools.wraps(func)
+    def wrapper(*args, **kwargs):
+        data_hora = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+        print(f"🕒 [{data_hora}] Executando '{func.__name__.replace('_', ' ').title()}'")
+        resultado = func(*args, **kwargs)
+        print(f"✅ [{data_hora}] '{func.__name__.replace('_', ' ').title()}' finalizada")
+        return resultado
+    return wrapper
 
 def menu():
     """Exibe o menu principal do sistema."""
@@ -332,7 +328,7 @@ def sacar(clientes):
 
 
 def exibir_extrato(clientes):
-    """Exibe o extrato da conta."""
+    """Exibe o extrato da conta com data e hora das transações."""
     cpf = input("Informe o CPF do cliente: ")
     cliente = filtrar_cliente(cpf, clientes)
 
@@ -344,19 +340,26 @@ def exibir_extrato(clientes):
     if not conta:
         return
 
-    print("\n" + "="*20 + " EXTRATO " + "="*20)
+    print("\n" + "="*25 + " EXTRATO " + "="*25)
+    print(f"Titular: {conta.cliente.nome}")
+    print(f"Agência: {conta.agencia} | Conta: {conta.numero}")
+    print(f"Data/Hora do extrato: {datetime.now().strftime('%d/%m/%Y %H:%M:%S')}")
+    print("-" * 58)
+
     transacoes = conta.historico.transacoes
 
-    extrato = ""
     if not transacoes:
-        extrato = "Não foram realizadas movimentações."
+        print("Não foram realizadas movimentações.")
     else:
-        for transacao in transacoes:
-            extrato += f"\n{transacao['tipo']}: R$ {transacao['valor']:.2f} - {transacao['data']}"
+        for i, transacao in enumerate(transacoes, 1):
+            tipo_emoji = "📈" if transacao['tipo'] == "Deposito" else "📉"
+            print(f"{i:2d}. {tipo_emoji} {transacao['tipo']}: "
+                  f"R$ {transacao['valor']:>8.2f} - {transacao['data']}")
 
-    print(extrato)
-    print(f"\nSaldo:\tR$ {conta.saldo:.2f}")
-    print("="*48)
+    print("-" * 58)
+    print(f"Saldo atual: R$ {conta.saldo:>8.2f}")
+    print(f"Transações hoje: {len(list(conta.historico.transacoes_do_dia()))}/10")
+    print("="*58)
 
 
 @log_transacao
