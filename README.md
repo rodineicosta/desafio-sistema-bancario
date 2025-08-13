@@ -99,6 +99,7 @@ python desafio.py
 [5]    Novo Cliente
 [6]    Listar Contas
 [7]    Listar Clientes
+[8]    Relatório de Transações
 [0]    Sair
 => 5
 
