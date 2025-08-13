@@ -1,10 +1,10 @@
-# 🏦 Sistema Bancário em Python - Versão 2.0
+# 🏦 Sistema Bancário em Python - Versão 3.0 (POO)
 
 ## 📖 Descrição do Projeto
 
-Este projeto é parte do desafio **Otimizando o Sistema Bancário com Funções Python**, da Formação **Santander 2025 - Back-End com Python**. O objetivo é criar um Sistema Bancário em Python otimizado com funções modulares que simule operações bancárias completas, incluindo gestão de clientes e contas correntes.
+Este projeto é parte do desafio **Modelando o Sistema Bancário em POO com Python**, da Formação **Santander 2025 - Back-End com Python**. O objetivo é atualizar a implementação do sistema bancário, para armazenar os dados de clientes e contas bancárias em objetos ao invés de dicionários, seguindo o modelo de classes UML.
 
-A **Versão 2.0** do sistema implementa uma arquitetura modularizada com funções específicas, gestão de múltiplos usuários e contas, seguindo as melhores práticas de programação Python.
+A **Versão 3.0** do sistema implementa uma arquitetura orientada a objetos com classes abstratas, herança, polimorfismo e encapsulamento, seguindo os princípios SOLID e as melhores práticas de POO em Python.
 
 ## ⚡ Funcionalidades
 
@@ -13,11 +13,107 @@ A **Versão 2.0** do sistema implementa uma arquitetura modularizada com funçõ
 - **[1] Depositar**: Permite realizar depósitos na conta
 - **[2] Sacar**: Permite realizar saques com limitações de segurança
 - **[3] Visualizar Extrato**: Exibe histórico de transações e saldo atual
-- **[4] Nova Conta Corrente**: Cria nova conta vinculada a um cliente
+- **[4] Nova Conta**: Cria nova conta vinculada a um cliente
 - **[5] Novo Cliente**: Cadastra novo cliente no sistema
-- **[6] Listar Contas Correntes**: Exibe todas as contas cadastradas
+- **[6] Listar Contas**: Exibe todas as contas cadastradas
 - **[7] Listar Clientes**: Exibe todos os clientes cadastrados
 - **[0] Sair**: Encerra o sistema
+
+## 🏗️ Arquitetura POO
+
+### 📦 Classes Implementadas
+
+#### 👤 **Cliente** (Classe Base)
+
+- **Responsabilidade**: Gerenciar dados e contas do cliente;
+- **Atributos**: `endereco`, `contas`;
+- **Métodos**: `realizar_transacao()`, `adicionar_conta()`.
+
+#### 🏛️ **PessoaFisica** (Herda de Cliente)
+
+- **Responsabilidade**: Especialização para clientes pessoa física;
+- **Atributos**: `nome`, `data_nascimento`, `cpf`, `endereco`;
+- **Herança**: Herda comportamentos de `Cliente`.
+
+#### 💳 **Conta** (Classe Base)
+
+- **Responsabilidade**: Gerenciar operações básicas da conta;
+- **Atributos**: `_saldo`, `_numero`, `_agencia`, `_cliente`, `_historico`;
+- **Métodos**: `sacar()`, `depositar()`, propriedades de acesso.
+
+#### 🏦 **ContaCorrente** (Herda de Conta)
+
+- **Responsabilidade**: Conta com limites específicos;
+- **Atributos**: `_limite` (R$ 500), `_limite_saques` (3 por dia);
+- **Métodos**: Sobrescreve `sacar()` com validações adicionais.
+
+#### 📜 **Historico**
+
+- **Responsabilidade**: Armazenar histórico de transações;
+- **Atributos**: `_transacoes`;
+- **Métodos**: `adicionar_transacao()`.
+
+#### 🔄 **Transacao** (Classe Abstrata - ABC)
+
+- **Responsabilidade**: Definir contrato para transações;
+- **Métodos abstratos**: `valor` (property), `registrar()`;
+- **Uso**: Base para `Deposito` e `Saque`.
+
+#### 📈 **Deposito** (Herda de Transacao)
+
+- **Responsabilidade**: Implementar operação de depósito;
+- **Atributos**: `_valor`;
+- **Métodos**: `registrar()` - executa depósito na conta.
+
+#### 📉 **Saque** (Herda de Transacao)
+
+- **Responsabilidade**: Implementar operação de saque;
+- **Atributos**: `_valor`;
+- **Métodos**: `registrar()` - executa saque na conta.
+
+### 🎯 Princípios POO Aplicados
+
+#### 🔐 **Encapsulamento**
+
+```python
+class Conta:
+    def __init__(self, numero, cliente):
+        self._saldo = 0         # Atributo protegido.
+        self._numero = numero   # Atributo protegido.
+
+    @property
+    def saldo(self):            # Acesso controlado via property.
+        return self._saldo
+```
+
+#### 🧬 **Herança**
+
+```python
+class ContaCorrente(Conta):     # Herda de Conta.
+    def __init__(self, numero, cliente, limite=500, limite_saques=3):
+        super().__init__(numero, cliente)  # Chama construtor da classe pai.
+        self._limite = limite
+```
+
+#### 🎭 **Polimorfismo**
+
+```python
+def realizar_transacao(self, conta, transacao):
+    transacao.registrar(conta)  # Funciona para Deposito ou Saque.
+```
+
+#### 🎨 **Abstração**
+
+```python
+class Transacao(ABC):
+    @abstractproperty
+    def valor(self):            # Método que deve ser implementado.
+        pass
+
+    @abstractclassmethod
+    def registrar(self, conta): # Método que deve ser implementado.
+        pass
+```
 
 ### 🔒 Regras de Negócio
 
@@ -25,8 +121,8 @@ A **Versão 2.0** do sistema implementa uma arquitetura modularizada com funçõ
 
 - ✅ Aceita apenas valores positivos;
 - ✅ Não há limite de valor ou quantidade;
-- ✅ Atualiza automaticamente o saldo e extrato;
-- ✅ **Função com argumentos posicionais apenas** (`positional only`).
+- ✅ Atualiza automaticamente o saldo e histórico;
+- ✅ **Implementado via classe `Deposito`**.
 
 #### Saques
 
@@ -35,320 +131,155 @@ A **Versão 2.0** do sistema implementa uma arquitetura modularizada com funçõ
 - ✅ Limite de **3 saques diários**;
 - ✅ Verificação de saldo suficiente;
 - ✅ Alertas em caso de violação das regras;
-- ✅ **Função com argumentos nomeados apenas** (`keyword only`).
+- ✅ **Implementado via classe `Saque`**.
 
-#### Extrato
+#### Visualização de Extrato
 
-- ✅ Lista todas as movimentações (depósitos e saques);
+- ✅ Lista todas as movimentações com *timestamp*;
 - ✅ Exibe saldo atual;
 - ✅ Formatação monetária: **R$ xxx.xx**;
 - ✅ Mensagem quando não há movimentações;
-- ✅ **Função com argumentos posicionais e nomeados** (`positional + keyword`).
+- ✅ **Implementado via classe `Historico`**.
 
 #### Gestão de Clientes
 
 - ✅ Cadastro com: **Nome, Data Nascimento, CPF, Endereço**;
-- ✅ **CPF único** por cliente (não permite duplicatas);
-- ✅ **Entrada flexível** de CPF (aceita formatação com pontos/hífens);
-- ✅ **Armazenamento padronizado** (apenas números);
-- ✅ Validação de dados obrigatórios.
+- ✅ CPF único por cliente (validação automática);
+- ✅ Filtros inteligentes para busca por CPF;
+- ✅ **Implementado via classe `PessoaFisica`**.
 
 #### Gestão de Contas
 
-- ✅ **Agência fixa**: "0001"
-- ✅ **Número sequencial** automático (inicia em 1);
-- ✅ **Vinculação obrigatória** com cliente existente;
-- ✅ **Um cliente pode ter múltiplas contas**;
-- ✅ **Uma conta pertence a apenas um cliente**.
+- ✅ Múltiplas contas por cliente;
+- ✅ Agência padrão: **0001**;
+- ✅ Numeração sequencial automática;
+- ✅ Vinculação obrigatória com cliente existente;
+- ✅ **Implementado via classe `ContaCorrente`**.
 
-## 🚀 Como Executar
+## 🚀 Tecnologias Utilizadas
 
-### Pré-requisitos
+- **Python 3.8+**;
+- **ABC (Abstract Base Classes)** - Para classes abstratas;
+- **datetime** - Para timestamps das transações;
+- **textwrap** - Para formatação do menu;
+- **POO** - Programação Orientada a Objetos;
+- **Type Hints** - Para melhor documentação do código.
 
-- Python 3.6 ou superior.
+## 📋 Pré-requisitos
 
-### Executando o Sistema
+- Python 3.8 ou superior;
+- Conhecimento básico de POO;
+- Terminal/Prompt de comando.
+
+## 🔧 Como Executar
+
+### 1️⃣ Clone o repositório
 
 ```bash
-# Clone o repositório.
 git clone https://github.com/rodineicosta/desafio-sistema-bancario.git
-
-# Navegue até o diretório.
 cd desafio-sistema-bancario
+```
 
-# Execute o sistema.
+### 2️⃣ Execute o sistema
+
+```bash
 python desafio.py
 ```
 
-## 🎮 Como Usar
+## 💡 Como Usar
 
-1. **Execute o programa**
-2. **Escolha uma opção do menu**:
-   - Digite `1` para depositar
-   - Digite `2` para sacar
-   - Digite `3` para visualizar extrato
-   - Digite `4` para criar nova conta corrente
-   - Digite `5` para cadastrar novo cliente
-   - Digite `6` para listar contas correntes
-   - Digite `7` para listar clientes
-   - Digite `0` para sair
-3. **Siga as instruções na tela**
+### 🔸 Fluxo Recomendado
 
-### Fluxo Recomendado de Uso
+1. **Criar Cliente**: Use `[5]` para cadastrar um novo cliente;
+2. **Criar Conta**: Use `[4]` para criar conta vinculada ao cliente;
+3. **Realizar Depósito**: Use `[1]` para adicionar fundos;
+4. **Realizar Saques**: Use `[2]` para sacar dinheiro;
+5. **Verificar Extrato**: Use `[3]` para ver movimentações.
 
-```text
-1. Primeiro, cadastre um cliente (opção 5);
-2. Depois, crie uma conta para este cliente (opção 4);
-3. Realize operações bancárias (opções 1, 2, 3);
-4. Use as listagens para verificar dados (opções 6, 7).
+### 🔸 Exemplo de Uso Completo
+
 ```
-
-### Exemplo de Uso Completo
-
 ```text
 ================ MENU ================
-[1]	Depositar
-[2]	Sacar
-[3]	Visualizar Extrato
-[4]	Nova Conta Corrente
-[5]	Novo Cliente
-[6]	Listar Contas Correntes
-[7]	Listar Clientes
-[0]	Sair
+[1]    Depositar
+[2]    Sacar
+[3]    Extrato
+[4]    Nova Conta
+[5]    Novo Cliente
+[6]    Listar Contas
+[7]    Listar Clientes
+[0]    Sair
 => 5
 
-Informe o CPF: 123.456.789-10
-Informe o nome completo: João da Silva
-Informe a data de nascimento (dd/mm/aaaa): 15/08/1990
-Informe o endereço (logradouro, nº - bairro - cidade/sigla estado): Rua das Flores, 123 - Centro - São Paulo/SP
+Informe o CPF: 12345678901
+Informe o nome completo: João Silva
+Informe a data de nascimento (dd/mm/aaaa): 01/01/1990
+Informe o endereço: Rua A, 123 - Centro - São Paulo/SP
 
-=== Cliente cadastrado com sucesso! ===
-
-=> 4
-
-Informe o CPF do cliente: 123.456.789-10
-
-=== Conta criada com sucesso! ===
-
-=> 1
-
-Informe o valor do depósito: 1000
-
-=== Depósito de R$ 1000.00 realizado com sucesso! ===
+=== Cliente criado com sucesso! ===
 ```
 
-## 🏗️ Estrutura do Código
+## 🔄 Evolução do Projeto
 
-A **Versão 2.0** foi desenvolvida com arquitetura modular avançada e segue as melhores práticas de Python:
+### v1.0 - Sistema Básico
 
-```python
-# Funções principais do sistema.
-def depositar(saldo, valor, extrato, /)             # Positional-only arguments.
-def sacar(*, saldo, valor, extrato, limite, ...)    # Keyword-only arguments.
-def exibir_extrato(saldo, /, *, extrato)            # Mixed arguments.
+- Funções simples;
+- Operações básicas;
+- Uma única conta.
 
-# Gestão de clientes.
-def criar_usuario(usuarios)                         # Cadastro de clientes.
-def filtrar_usuario(cpf, usuarios)                  # Busca de clientes.
-def listar_usuarios(usuarios)                       # Listagem de clientes.
+### v2.0 - Sistema com Funções
 
-# Gestão de contas.
-def criar_conta(agencia, numero_conta, usuarios)    # Criação de contas.
-def listar_contas(contas)                           # Listagem de contas.
+- Funções especializadas;
+- Múltiplos clientes e contas;
+- Argumentos tipados (positional/keyword-only).
 
-# Interface e controle.
-def menu()                                          # Menu com textwrap.
-def main()                                          # Função principal.
-```
+### v3.0 - Sistema POO (Atual)
 
-### 🚀 Características Técnicas Avançadas
+- Classes e objetos;
+- Herança e polimorfismo;
+- Classes abstratas;
+- Encapsulamento.
 
-#### **Argumentos de Função Especializados:**
+## 🤝 Contribuição
 
-- ✅ **Positional-only** (`/`): Função `depositar()`;
-- ✅ **Keyword-only** (`*`): Função `sacar()`;
-- ✅ **Mixed arguments**: Função `exibir_extrato()`;
-- ✅ **Multiple return values**: Retorno de tuplas.
+1. Faça um fork do projeto;
+2. Crie uma branch para sua feature (`git checkout -b feature/AmazingFeature`);
+3. Commit suas mudanças (`git commit -m 'Add some AmazingFeature'`);
+4. Push para a branch (`git push origin feature/AmazingFeature`);
+5. Abra um Pull Request.
 
-#### **Gestão de Dados:**
+## 📄 Licença
 
-- ✅ **Listas de dicionários** para armazenamento;
-- ✅ **Filtragem avançada** com list comprehensions;
-- ✅ **Validação robusta** de entrada de dados;
-- ✅ **Normalização de CPF** (entrada flexível, armazenamento padronizado).
+Este projeto está sob a licença MIT. Veja o arquivo [LICENSE](LICENSE) para mais detalhes.
 
-#### **Interface e UX:**
+## 👨‍💻 Autor
 
-- ✅ **Menu formatado** com biblioteca `textwrap`;
-- ✅ **Mensagens padronizadas** de sucesso/erro;
-- ✅ **Formatação consistente** de saídas;
-- ✅ **Navegação intuitiva** numerada.
+**Rodinei Costa**
 
-#### **Validações e Segurança:**
+- DIO: [Rodinei Costa](https://www.dio.me/users/rodineicosta);
+- GitHub: [@rodineicosta](https://github.com/rodineicosta);
+- LinkedIn: [Rodinei Costa](https://linkedin.com/in/rodineicosta).
 
-- ✅ **CPF único** por cliente;
+## 🎓 Reconhecimentos
+
+- **DIO (Digital Innovation One)** - Plataforma de ensino;
+- **Santander 2025** - Programa de formação;
+- **Python Software Foundation** - Linguagem Python.
+
+---
+
+⭐ **Se este projeto foi útil para você, considere dar uma estrela!** ⭐
+
 - ✅ **Vinculação obrigatória** conta-cliente;
 - ✅ **Limites de saque** rigorosamente controlados;
 - ✅ **Entrada flexível** com validação robusta.
 
 ## 🔧 Recursos Implementados v2.0
 
-### **🎯 Novos Recursos:**
-
-- **Gestão completa de clientes** com dados pessoais;
-- **Sistema de contas correntes** com numeração automática;
-- **Busca inteligente** por CPF (aceita qualquer formato);
-- **Listagens organizadas** de clientes e contas;
-- **Arquitetura modular** com funções especializadas.
-
-### **🔄 Melhorias da v1.0:**
-
-- **Interface renovada** com menu formatado;
-- **Validações aprimoradas** para todas as operações;
-- **Código mais limpo** e documentado;
-- **Reutilização de código** através de funções;
-- **Escalabilidade** para múltiplos usuários.
-
-### **📊 Funcionalidades Técnicas:**
-
-- **Entrada de dados flexível** (CPF com ou sem formatação);
-- **Armazenamento padronizado** (apenas números no CPF);
-- **Controle de estado** (saldos, limites, histórico);
-- **Feedback detalhado** ao usuário;
-- **Tratamento de erros** abrangente.
-
-## 📝 Exemplos de Saída
-
-### Extrato Bancário
-
-```text
-============================== EXTRATO ==============================
-Depósito:		R$ 1000.00
-Saque:			R$ 200.00
-Depósito:		R$ 500.00
-Saque:			R$ 100.00
-
-Saldo:			R$ 1200.00
-====================================================================
-```
-
-### Listagem de Clientes
-
-```text
-====================================================================================================
-            Nome:		   João da Silva Santos
-            Data Nasc.:	15/08/1990
-            CPF:		   12345678910
-            Endereço:	Rua das Flores, 123 - Centro - São Paulo/SP
-====================================================================================================
-            Nome:		   Maria Oliveira Costa
-            Data Nasc.:	22/03/1985
-            CPF:		   98765432100
-            Endereço:	Av. Paulista, 1000 - Bela Vista - São Paulo/SP
-```
-
-### Listagem de Contas
-
-```text
-====================================================================================================
-            Agência:	0001
-            C/C:		1
-            Titular:	João da Silva Santos
-====================================================================================================
-            Agência:	0001
-            C/C:		2
-            Titular:	Maria Oliveira Costa
-```
-
-## 🧠 Conceitos Python Aplicados
-
-### **Recursos Avançados:**
-
-- ✅ **Positional-only parameters** (`/`) - `depositar(saldo, valor, extrato, /)`;
-- ✅ **Keyword-only parameters** (`*`) - `sacar(*, saldo=..., valor=...)`;
-- ✅ **Mixed parameters** - `exibir_extrato(saldo, /, *, extrato)`;
-- ✅ **Multiple return values** - Funções retornam tuplas;
-- ✅ **List comprehensions** - Filtragem de dados;
-- ✅ **Filter function** - Extração de números do CPF;
-- ✅ **Biblioteca textwrap** - Formatação de menu;
-- ✅ **Docstrings** - Documentação completa das funções.
-
-### **Estruturas de Dados:**
-
-- ✅ **Listas** para coleções de usuários e contas;
-- ✅ **Dicionários** para representar entidades (usuário, conta);
-- ✅ **Strings** para armazenamento de extrato e CPF;
-- ✅ **Tuplas** para retorno múltiplo de funções.
-
-### **Validações e Controle:**
-
-- ✅ **Validação de tipos** (float para valores monetários);
-- ✅ **Controle de fluxo** com estruturas condicionais;
-- ✅ **Loops** para interface contínua;
-- ✅ **Tratamento de casos especiais** (CPF duplicado, conta inexistente).
-
-## 🧪 Casos de Teste
-
-### **Teste de CPF Flexível:**
-
-```python
-# Entradas aceitas (todas armazenadas como: 12345678910).
-"123.456.789-10"  ✅
-"123 456 789 10"  ✅
-"12345678910"     ✅
-"123-456-789.10"  ✅
-```
-
-### **Teste de Limites de Saque:**
-
-```python
-# Cenário: 3 saques de R$ 100 cada.
-Saque 1: R$ 100.00  ✅ (Permitido - 1/3)
-Saque 2: R$ 100.00  ✅ (Permitido - 2/3)
-Saque 3: R$ 100.00  ✅ (Permitido - 3/3)
-Saque 4: R$ 100.00  ❌ (Negado - Limite diário atingido)
-```
-
-### **Teste de Vinculação Conta-Cliente:**
-
-```python
-# Cenário: Criar conta sem cliente cadastrado.
-CPF informado: 11111111111
-Cliente existe? ❌
-Resultado: "Cliente não encontrado, fluxo encerrado!"
-```
-
-## 📚 Tecnologias e Bibliotecas
-
-- **Python 3.6+** - Linguagem principal;
-- **textwrap** - Formatação de texto e menu;
-- **Funções built-in**: `filter()`, `input()`, `print()`, `len()`;
-- **Estruturas nativas**: `list`, `dict`, `str`, `float`, `int`;
-- **Programação funcional** - Funções como cidadãos de primeira classe.
-
-## 🎯 Objetivos do Desafio v2.0
-
-Esta versão avançada visa desenvolver:
-
-- **Programação funcional** com parâmetros especializados;
-- **Modularização** e reutilização de código;
-- **Gestão de dados** com estruturas complexas;
-- **Validação robusta** de entrada do usuário;
-- **Interface profissional** e organizada;
-- **Escalabilidade** para sistemas maiores.
-
-## 🏆 Evolução do Projeto
-
-### **v1.0 → v2.0:**
-
-- 🔄 **3 funções** → **9 funções especializadas**;
-- 🔄 **Operações básicas** → **Sistema completo de gestão**;
-- 🔄 **Usuário único** → **Múltiplos clientes e contas**;
-- 🔄 **Interface simples** → **Menu profissional com textwrap**;
-- 🔄 **Validação básica** → **Validação robusta e flexível**.
+Para acompanhar a evolução do desafio da versão anterior, veja o arquivo [README v2](https://github.com/rodineicosta/desafio-sistema-bancario/blob/v2/README.md) para mais detalhes.
 
 ---
 
 **Desenvolvido como parte do Desafio DIO + Santander 2025** 🚀
 
-#### Sistema Bancário v2.0 - Otimizado com Funções Python
+### Sistema Bancário v3.0 - Otimizado com Programação Orientada a Objeto com Python
