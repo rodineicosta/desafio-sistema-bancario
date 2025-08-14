@@ -1,8 +1,8 @@
-# 🏦 Sistema Bancário em Python - Versão 4.2
+# 🏦 Sistema Bancário em Python - Versão 4.3
 
 ## 📖 Descrição do Projeto
 
-Este projeto é parte do desafio **Manipulando Arquivos**, da Formação **Santander 2025 - Back-End com Python**. A **Versão 4.2** implementa o informações em um arquivo para análise posterior e backup contínuo, modificando o atual decorador de log, que imprime informações no console, para que ele salve essas informações em um arquivo de log, possibilitando uma revisão mais fácil e uma análise mais detalhada das operações dos usuários.
+Este projeto é parte do desafio **Gerenciamento de Pacotes, Convenções e Boas Práticas Python**, da Formação **Santander 2025 - Back-End com Python**. A **Versão 4.3** implementa a instalação e o gerenciamento de pacotes, além das correções do código seguindo as convenções da PEP8. Mantendo todas as funcionalidades da versão anterior.
 
 ## ⚡ Funcionalidades
 
@@ -197,6 +197,12 @@ Informe o endereço: Rua A, 123 - Centro - São Paulo/SP
 - Registra transação com data em formato UTC, nome da função, argumentos e retorno;
 - Mantidas todas as funcionalidades da v4.1.
 
+### v4.3 - Gerenciamento de Pacotes, Convenções e Boas Práticas Python
+
+- Ordenamento correto das importações;
+- Espaçamentos entre linhas;
+- Limite máximo de caracteres por linha.
+
 ---
 
 ## 📚 Conceitos Demonstrados
@@ -207,7 +213,11 @@ Informe o endereço: Rua A, 123 - Centro - São Paulo/SP
 - **Generators**: `yield` para eficiência de memória;
 - **Iterators**: Protocolo `__iter__` e `__next__`;
 - **Representação**: `__repr__` para definir a representação em string de um objeto;
-- **Arquivos**: `pathlib`, `with`, `open()` e `write()` para manipulação de arquivos.
+- **Arquivos**: `pathlib`, `with`, `open()` e `write()` para manipulação de arquivos;
+- **Convenções**: Utilizações de pacotes:
+  - `flake8` para verificações;
+  - `isort` para ordenação de importações;
+  - `black` para formatação de código.
 
 ### Data/Hora
 
@@ -230,6 +240,7 @@ Informe o endereço: Rua A, 123 - Centro - São Paulo/SP
 - ✅ **Criação de arquivo** de log para análise de operações;
 - ✅ **Registro no Decorador** de data/hora, nome da função, argumentos e retorno;
 - ✅ **Novos registros** adicionados ao final do arquivo;
+- ✅ **Boas Práticas** com código padronizado, conforme convenções da PEP8;
 - ✅ **Código testado** e documentado;
 - ✅ **Arquitetura escalável** para futuras expansões.
 
@@ -277,4 +288,4 @@ Para acompanhar a evolução do desafio da versão anterior, veja o arquivo [REA
 
 ### 🚀 Desenvolvido como parte do Desafio DIO + Santander 2025
 
-Sistema Bancário v4.2 - Manipulando Arquivos com Python
+Sistema Bancário v4.3 - Gerenciamento de Pacotes, Convenções e Boas Práticas Python
