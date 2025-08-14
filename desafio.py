@@ -1,10 +1,11 @@
+import functools
 import textwrap
 from abc import ABC, abstractclassmethod, abstractproperty
-from datetime import datetime, UTC
-import functools
+from datetime import UTC, datetime
 from pathlib import Path
 
 ROOT_PATH = Path(__file__).parent
+
 
 class ContaIterador:
     """Iterador personalizado para contas do banco."""
@@ -45,8 +46,11 @@ class Cliente:
         transacoes_hoje = list(conta.historico.transacoes_do_dia(data_hoje))
 
         if len(transacoes_hoje) >= 10:
-            print(f"\nOperação falhou! Você excedeu o número de transações permitidas para hoje ({len(transacoes_hoje)}/10).")
-            print(f"Tente novamente amanhã.")
+            print(
+                "\nOperação falhou! Você excedeu o número de transações permitidas "
+                f"para hoje ({len(transacoes_hoje)}/10)."
+            )
+            print("Tente novamente amanhã.")
             return False
 
         transacao.registrar(conta)
@@ -151,7 +155,10 @@ class ContaCorrente(Conta):
         excedeu_limite = valor > self._limite
 
         if excedeu_limite:
-            print(f"\nOperação falhou! O valor do saque excede o limite de R$ {self._limite:.2f}.")
+            print(
+                "\nOperação falhou! O valor do saque excede o limite "
+                f"de R$ {self._limite:.2f}."
+            )
             return False
         else:
             return super().sacar(valor)
@@ -185,9 +192,13 @@ class Historico:
         )
 
     def gerar_relatorio(self, tipo_transacao=None):
-        """Gerador que permite iterar sobre as transações, opcionalmente filtradas por tipo."""
+        """Gerador que permite iterar sobre as transações,
+        opcionalmente filtradas por tipo."""
         for transacao in self._transacoes:
-            if tipo_transacao is None or transacao["tipo"].lower() == tipo_transacao.lower():
+            if (
+                tipo_transacao is None
+                or transacao["tipo"].lower() == tipo_transacao.lower()
+            ):
                 yield transacao
 
     def transacoes_do_dia(self, data=None):
@@ -248,29 +259,39 @@ class Deposito(Transacao):
         if sucesso_transacao:
             conta.historico.adicionar_transacao(self)
 
+
 def log_transacao(func):
     """Decorador que registra data, hora e tipo de transação."""
+
     @functools.wraps(func)
     def wrapper(*args, **kwargs):
         resultado = func(*args, **kwargs)
         data_hora = datetime.now(UTC).strftime("%Y-%m-%d %H:%M:%S")
         args_log = []
         for arg in args:
-            if hasattr(arg, '__class__') and hasattr(arg, '__dict__'):
+            if hasattr(arg, "__class__") and hasattr(arg, "__dict__"):
                 args_log.append(f"<{arg.__class__.__name__}>")
             else:
                 args_log.append(str(arg)[:50])
 
-        kwargs_log = {k: (str(v)[:50] if not hasattr(v, '__dict__') else f"<{v.__class__.__name__}>")
-                     for k, v in kwargs.items()}
+        kwargs_log = {
+            k: (
+                str(v)[:50]
+                if not hasattr(v, "__dict__")
+                else f"<{v.__class__.__name__}>"
+            )
+            for k, v in kwargs.items()
+        }
 
         with open(ROOT_PATH / "log.txt", "a", encoding="utf-8") as arquivo:
             arquivo.write(
-                f"[{data_hora}] - Função: '{func.__name__}' executada com argumentos {args_log} e {kwargs_log}. "
-                f"Retornou: {resultado}\n"
+                f"[{data_hora}] - Função: '{func.__name__}' executada com argumentos "
+                f"{args_log} e {kwargs_log}. Retornou: {resultado}\n"
             )
         return resultado
+
     return wrapper
+
 
 def menu():
     """Exibe o menu principal do sistema."""
@@ -291,7 +312,7 @@ def menu():
 
 def filtrar_cliente(cpf, clientes):
     """Filtra cliente por CPF."""
-    cpf_numeros = ''.join(filter(str.isdigit, cpf))
+    cpf_numeros = "".join(filter(str.isdigit, cpf))
     clientes_filtrados = [cliente for cliente in clientes if cliente.cpf == cpf_numeros]
     return clientes_filtrados[0] if clientes_filtrados else None
 
@@ -359,7 +380,7 @@ def exibir_extrato(clientes):
     if not conta:
         return
 
-    print("\n" + "="*25 + " EXTRATO " + "="*25)
+    print("\n" + "=" * 25 + " EXTRATO " + "=" * 25)
     print(f"Titular: {conta.cliente.nome}")
     print(f"Agência: {conta.agencia} | Conta: {conta.numero}")
     print(f"Data/Hora do extrato: {datetime.now().strftime('%d/%m/%Y %H:%M:%S')}")
@@ -371,14 +392,16 @@ def exibir_extrato(clientes):
         print("Não foram realizadas movimentações.")
     else:
         for i, transacao in enumerate(transacoes, 1):
-            tipo_emoji = "📈" if transacao['tipo'] == "Deposito" else "📉"
-            print(f"{i:2d}. {tipo_emoji} {transacao['tipo']}: "
-                  f"R$ {transacao['valor']:>8.2f} - {transacao['data']}")
+            tipo_emoji = "📈" if transacao["tipo"] == "Deposito" else "📉"
+            print(
+                f"{i:2d}. {tipo_emoji} {transacao['tipo']}: "
+                f"R$ {transacao['valor']:>8.2f} - {transacao['data']}"
+            )
 
     print("-" * 58)
     print(f"Saldo atual: R$ {conta.saldo:>8.2f}")
     print(f"Transações hoje: {len(list(conta.historico.transacoes_do_dia()))}/10")
-    print("="*58)
+    print("=" * 58)
 
 
 @log_transacao
@@ -387,7 +410,7 @@ def criar_cliente(clientes):
     cpf = input("Informe o CPF: ")
 
     # Filtrar apenas os números do CPF para armazenamento.
-    cpf_numeros = ''.join(filter(str.isdigit, cpf))
+    cpf_numeros = "".join(filter(str.isdigit, cpf))
 
     # Verificar se foi informado algum número.
     if not cpf_numeros:
@@ -402,9 +425,13 @@ def criar_cliente(clientes):
 
     nome = input("Informe o nome completo: ")
     data_nascimento = input("Informe a data de nascimento (dd/mm/aaaa): ")
-    endereco = input("Informe o endereço (logradouro, nº - bairro - cidade/sigla estado): ")
+    endereco = input(
+        "Informe o endereço (logradouro, nº - bairro - cidade/sigla estado): "
+    )
 
-    cliente = PessoaFisica(nome=nome, data_nascimento=data_nascimento, cpf=cpf_numeros, endereco=endereco)
+    cliente = PessoaFisica(
+        nome=nome, data_nascimento=data_nascimento, cpf=cpf_numeros, endereco=endereco
+    )
 
     clientes.append(cliente)
 
@@ -434,7 +461,7 @@ def listar_contas(contas):
         print("\nNenhuma conta cadastrada.")
         return
 
-    print("\n" + "="*60 + " CONTAS CADASTRADAS " + "="*60)
+    print("\n" + "=" * 60 + " CONTAS CADASTRADAS " + "=" * 60)
 
     # Usando o iterador personalizado.
     for dados_conta in ContaIterador(contas):
@@ -455,7 +482,7 @@ def relatorio_transacoes(clientes):
     if not conta:
         return
 
-    print("\n" + "="*15 + " OPÇÕES DE RELATÓRIO " + "="*15)
+    print("\n" + "=" * 15 + " OPÇÕES DE RELATÓRIO " + "=" * 15)
     print("1 - Todas as transações")
     print("2 - Apenas depósitos")
     print("3 - Apenas saques")
@@ -463,36 +490,50 @@ def relatorio_transacoes(clientes):
 
     opcao = input("Escolha uma opção: ")
 
-    print("\n" + "="*20 + " RELATÓRIO " + "="*20)
+    print("\n" + "=" * 20 + " RELATÓRIO " + "=" * 20)
 
     if opcao == "1":
         print("📋 Todas as Transações:")
         for transacao in conta.historico.gerar_relatorio():
-            print(f"  • {transacao['tipo']}: R$ {transacao['valor']:.2f} - {transacao['data']}")
+            print(
+                f"  • {transacao['tipo']}: "
+                f"R$ {transacao['valor']:.2f} - {transacao['data']}"
+            )
 
     elif opcao == "2":
         print("📈 Apenas Depósitos:")
         for transacao in conta.historico.gerar_relatorio("Deposito"):
-            print(f"  • {transacao['tipo']}: R$ {transacao['valor']:.2f} - {transacao['data']}")
+            print(
+                f"  • {transacao['tipo']}: "
+                f"R$ {transacao['valor']:.2f} - {transacao['data']}"
+            )
 
     elif opcao == "3":
         print("📉 Apenas Saques:")
         for transacao in conta.historico.gerar_relatorio("Saque"):
-            print(f"  • {transacao['tipo']}: R$ {transacao['valor']:.2f} - {transacao['data']}")
+            print(
+                f"  • {transacao['tipo']}: "
+                f"R$ {transacao['valor']:.2f} - {transacao['data']}"
+            )
 
     elif opcao == "4":
-        data = input("Informe a data (dd/mm/aaaa) ou deixe em branco para hoje: ").strip()
+        data = input(
+            "Informe a data (dd/mm/aaaa) ou deixe em branco para hoje: "
+        ).strip()
         if not data:
             data = None
         print(f"📅 Transações do dia {data or 'hoje'}:")
         for transacao in conta.historico.transacoes_do_dia(data):
-            print(f"  • {transacao['tipo']}: R$ {transacao['valor']:.2f} - {transacao['data']}")
+            print(
+                f"  • {transacao['tipo']}: "
+                f"R$ {transacao['valor']:.2f} - {transacao['data']}"
+            )
 
     else:
         print("Opção inválida!")
         return
 
-    print("="*48)
+    print("=" * 48)
 
 
 def listar_clientes(clientes):
@@ -503,12 +544,16 @@ def listar_clientes(clientes):
 
     for cliente in clientes:
         # Formatação do CPF: XXX.XXX.XXX-XX.
-        cpf_formatado = f"{cliente.cpf[:3]}.{cliente.cpf[3:6]}.{cliente.cpf[6:9]}-{cliente.cpf[9:]}"
+        cpf_formatado = (
+            f"{cliente.cpf[:3]}.{cliente.cpf[3:6]}.{cliente.cpf[6:9]}-{cliente.cpf[9:]}"
+        )
 
         # Formatação da data: DD/MM/AAAA.
         data_formatada = cliente.data_nascimento
         if "/" not in data_formatada and len(data_formatada) == 8:
-            data_formatada = f"{data_formatada[:2]}/{data_formatada[2:4]}/{data_formatada[4:]}"
+            data_formatada = (
+                f"{data_formatada[:2]}/{data_formatada[2:4]}/{data_formatada[4:]}"
+            )
 
         linha = f"""\
             Nome:\t\t{cliente.nome}
@@ -557,7 +602,9 @@ def main():
             break
 
         else:
-            print("Operação inválida, por favor selecione novamente a operação desejada.")
+            print(
+                "Operação inválida, por favor selecione novamente a operação desejada."
+            )
 
 
 if __name__ == "__main__":
