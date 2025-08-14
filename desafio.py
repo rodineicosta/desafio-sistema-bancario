@@ -1,7 +1,10 @@
 import textwrap
 from abc import ABC, abstractclassmethod, abstractproperty
-from datetime import datetime
+from datetime import datetime, UTC
 import functools
+from pathlib import Path
+
+ROOT_PATH = Path(__file__).parent
 
 class ContaIterador:
     """Iterador personalizado para contas do banco."""
@@ -62,6 +65,9 @@ class PessoaFisica(Cliente):
         self.nome = nome
         self.data_nascimento = data_nascimento
         self.cpf = cpf
+
+    def __repr__(self) -> str:
+        return f"<{self.__class__.__name__}: ('{self.nome}', '{self.cpf}')>"
 
 
 class Conta:
@@ -246,10 +252,23 @@ def log_transacao(func):
     """Decorador que registra data, hora e tipo de transação."""
     @functools.wraps(func)
     def wrapper(*args, **kwargs):
-        data_hora = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
-        print(f"🕒 [{data_hora}] Executando '{func.__name__.replace('_', ' ').title()}'")
         resultado = func(*args, **kwargs)
-        print(f"✅ [{data_hora}] '{func.__name__.replace('_', ' ').title()}' finalizada")
+        data_hora = datetime.now(UTC).strftime("%Y-%m-%d %H:%M:%S")
+        args_log = []
+        for arg in args:
+            if hasattr(arg, '__class__') and hasattr(arg, '__dict__'):
+                args_log.append(f"<{arg.__class__.__name__}>")
+            else:
+                args_log.append(str(arg)[:50])
+
+        kwargs_log = {k: (str(v)[:50] if not hasattr(v, '__dict__') else f"<{v.__class__.__name__}>")
+                     for k, v in kwargs.items()}
+
+        with open(ROOT_PATH / "log.txt", "a", encoding="utf-8") as arquivo:
+            arquivo.write(
+                f"[{data_hora}] - Função: '{func.__name__}' executada com argumentos {args_log} e {kwargs_log}. "
+                f"Retornou: {resultado}\n"
+            )
         return resultado
     return wrapper
 

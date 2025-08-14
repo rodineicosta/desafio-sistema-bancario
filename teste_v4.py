@@ -1,17 +1,18 @@
 #!/usr/bin/env python3
 """
-Teste da versão 4.1 do Sistema Bancário
-Foco: Validação do limite de 10 transações diárias e funcionalidades de data/hora
+Teste da versão 4.2 do Sistema Bancário
+Foco: Validação do limite de 10 transações diárias, funcionalidades de data/hora e log em arquivo
 """
 
 import sys
+import os
 from datetime import datetime, timedelta
 sys.path.append('.')
 from desafio import *
 
 def teste_limite_transacoes_diarias():
     """Testa o limite de 10 transações diárias."""
-    print("🧪 TESTE V4.1: Limite de 10 transações diárias")
+    print("🧪 TESTE V4.2: Limite de 10 transações diárias")
     print("="*60)
 
     # Criar cliente e conta.
@@ -56,7 +57,7 @@ def teste_limite_transacoes_diarias():
 
 def teste_funcionalidades_datetime():
     """Testa as funcionalidades de data e hora."""
-    print("\n\n🧪 TESTE V4.1: Funcionalidades de Data/Hora")
+    print("\n\n🧪 TESTE V4.2: Funcionalidades de Data/Hora")
     print("="*60)
 
     # Criar cliente e conta.
@@ -91,30 +92,88 @@ def teste_funcionalidades_datetime():
 
     return len(transacoes_hoje) == 3
 
-def teste_decorator_log():
-    """Testa o decorator de log de transações."""
-    print("\n\n🧪 TESTE V4.1: Decorator de Log")
+def teste_log_arquivo():
+    """🆕 Testa o log em arquivo."""
+    print("\n\n🧪 TESTE V4.2: Log em Arquivo")
     print("="*60)
 
+    # Arquivo de log.
+    log_file = ROOT_PATH / "log.txt"
+    print("\n1. Verificando criação do arquivo de log:")
+    print(f"   Arquivo de log: {log_file}")
+    print(f"   Arquivo existe antes do teste: {'✅ Sim' if log_file.exists() else '❌ Não'}")
+
+    # Criar cliente e fazer algumas transações.
     cliente = PessoaFisica(nome="Teste Log", data_nascimento="10/12/1992", cpf="11122233344", endereco="Rua Log, 789")
     conta = ContaCorrente.nova_conta(cliente=cliente, numero=3)
     cliente.adicionar_conta(conta)
 
-    print("\n1. Testando log de depósito:")
+    print("\n2. Realizando transações para gerar logs:")
+
+    # Depósito.
     deposito = Deposito(500.00)
-    # O decorator vai imprimir automaticamente.
+    resultado = cliente.realizar_transacao(conta, deposito)
+    print(f"   Depósito: {'✅ Sucesso' if resultado else '❌ Falha'}")
+
+    # Saque.
+    saque = Saque(100.00)
+    resultado = cliente.realizar_transacao(conta, saque)
+    print(f"   Saque: {'✅ Sucesso' if resultado else '❌ Falha'}")
+
+    print("\n3. Verificando arquivo de log gerado:")
+    if log_file.exists():
+        print("   ✅ Arquivo log.txt criado com sucesso!")
+
+        with open(log_file, "r", encoding="utf-8") as arquivo:
+            linhas = arquivo.readlines()
+
+        print(f"   📊 Total de linhas no log: {len(linhas)}")
+        print("   📝 Conteúdo do log:")
+
+        for i, linha in enumerate(linhas, 1):
+            print(f"   {i}. {linha.strip()}")
+
+        # Validações
+        log_content = ''.join(linhas)
+        tem_data = any('[' in linha and ']' in linha for linha in linhas)
+        tem_funcao = 'criar_cliente' in log_content
+        tem_argumentos = 'argumentos' in log_content.lower()
+        tem_retorno = 'retorn' in log_content.lower()
+
+        print(f"\n   📋 Validações do formato:")
+        print(f"   Data/hora presente: {'✅' if tem_data else '❌'}")
+        print(f"   Nome da função: {'✅' if tem_funcao else '❌'}")
+        print(f"   Argumentos registrados: {'✅' if tem_argumentos else '❌'}")
+        print(f"   Valor de retorno: {'✅' if tem_retorno else '❌'}")
+
+        return len(linhas) >= 2 and tem_data and tem_funcao
+    else:
+        print("   ❌ Arquivo de log não foi criado!")
+        return False
+
+def teste_decorator_log():
+    """Testa o decorator de log de transações."""
+    print("\n\n🧪 TESTE V4.2: Decorator de Log (Console)")
+    print("="*60)
+
+    cliente = PessoaFisica(nome="Teste Decorator", data_nascimento="05/05/1995", cpf="55566677788", endereco="Rua Decorator, 456")
+    conta = ContaCorrente.nova_conta(cliente=cliente, numero=4)
+    cliente.adicionar_conta(conta)
+
+    print("\n1. Testando log de depósito:")
+    deposito = Deposito(300.00)
     resultado = cliente.realizar_transacao(conta, deposito)
 
     print("\n2. Testando log de saque:")
-    saque = Saque(100.00)
+    saque = Saque(50.00)
     resultado = cliente.realizar_transacao(conta, saque)
 
     return True
 
 def main():
-    """Executa todos os testes da v4.1."""
-    print("🔍 INICIANDO TESTES DO SISTEMA BANCÁRIO V4.1")
-    print("💫 Funcionalidades: Data/Hora e Limite de Transações")
+    """Executa todos os testes da v4.2."""
+    print("🔍 INICIANDO TESTES DO SISTEMA BANCÁRIO V4.2")
+    print("💫 Funcionalidades: Data/Hora, Limite de Transações e Log em Arquivo")
     print("="*60)
 
     resultados = []
@@ -135,16 +194,24 @@ def main():
         print(f"❌ Erro no teste de datetime: {e}")
         resultados.append(("Funcionalidades DateTime", False))
 
-    # Teste 3: Decorator de log.
+    # Teste 3: Log em arquivo.
     try:
-        resultado3 = teste_decorator_log()
-        resultados.append(("Decorator de Log", resultado3))
+        resultado3 = teste_log_arquivo()
+        resultados.append(("Log em Arquivo", resultado3))
+    except Exception as e:
+        print(f"❌ Erro no teste de log em arquivo: {e}")
+        resultados.append(("Log em Arquivo", False))
+
+    # Teste 4: Decorator de log.
+    try:
+        resultado4 = teste_decorator_log()
+        resultados.append(("Decorator de Log", resultado4))
     except Exception as e:
         print(f"❌ Erro no teste de decorator: {e}")
         resultados.append(("Decorator de Log", False))
 
     # Relatório final.
-    print("\n\n📊 RELATÓRIO FINAL DOS TESTES V4.1")
+    print("\n\n📊 RELATÓRIO FINAL DOS TESTES V4.2")
     print("="*60)
 
     sucessos = 0
@@ -158,8 +225,9 @@ def main():
     print(f"Total: {sucessos}/{len(resultados)} testes passaram")
 
     if sucessos == len(resultados):
-        print("\n🎉 TODOS OS TESTES DA V4.1 PASSARAM!")
-        print("✨ Sistema bancário com data/hora funcionando perfeitamente!")
+        print("\n🎉 TODOS OS TESTES DA V4.2 PASSARAM!")
+        print("✨ Sistema bancário com data/hora e log em arquivo funcionando perfeitamente!")
+        print(f"📄 Logs salvos em: {ROOT_PATH / 'log.txt'}")
     else:
         print(f"\n⚠️  {len(resultados) - sucessos} teste(s) falharam")
         print("🔧 Verifique os logs acima para mais detalhes")

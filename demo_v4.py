@@ -1,18 +1,19 @@
 #!/usr/bin/env python3
 """
-Demo do Sistema Bancário v4.1 - Lidando com Data, Hora e Fuso Horário
-Funcionalidades: Limite de 10 transações diárias, timestamps detalhados, decorators
+Demo do Sistema Bancário v4.2 - Lidando com Data, Hora e Fuso Horário + Log em Arquivo
+Funcionalidades: Limite de 10 transações diárias, timestamps detalhados, decorators, log em arquivo
 """
 
 import sys
+import os
 from datetime import datetime
 sys.path.append('.')
 from desafio import *
 
-def demo_v4_1():
-    """Demonstração completa da versão 4.1."""
-    print("🌟 SISTEMA BANCÁRIO V4.1 - DEMO COMPLETA")
-    print("🕐 Funcionalidades: Data/Hora e Limite de Transações")
+def demo():
+    """Demonstração completa da versão 4.2."""
+    print("🌟 SISTEMA BANCÁRIO V4.2 - DEMO COMPLETA")
+    print("🕐 Funcionalidades: Data/Hora, Limite de Transações e Log em Arquivo")
     print("="*65)
 
     # Criar cliente.
@@ -97,7 +98,7 @@ def demo_v4_1():
 
     contador = 0
     for relatorio in conta.historico.gerar_relatorio():
-        tipo_emoji = "�" if relatorio['tipo'] == "Deposito" else "📉"
+        tipo_emoji = "📈" if relatorio['tipo'] == "Deposito" else "📉"
         print(f"   📝 {tipo_emoji} {relatorio['tipo']}: R$ {relatorio['valor']:.2f} - {relatorio['data']}")
         contador += 1
         if contador >= 3:  # Limitar saída
@@ -114,8 +115,24 @@ def demo_v4_1():
                 print(f"   {linha}")
         break  # Só mostrar a primeira conta.
 
+    # Demonstrar arquivo de log.
+    print("\n9. 📄 Verificando arquivo de log gerado...")
+    log_file = ROOT_PATH / "log.txt"
+    if log_file.exists():
+        print("   ✅ Arquivo log.txt criado com sucesso!")
+        print("   📝 Últimas 5 entradas do log:")
+
+        with open(log_file, "r", encoding="utf-8") as arquivo:
+            linhas = arquivo.readlines()
+            for i, linha in enumerate(linhas[-5:], 1):
+                print(f"   {i}. {linha.strip()}")
+
+        print(f"   📊 Total de entradas no log: {len(linhas)}")
+    else:
+        print("   ❌ Arquivo de log não encontrado!")
+
     # Estatísticas finais.
-    print("\n9. 📈 Estatísticas finais:")
+    print("\n10. 📈 Estatísticas finais:")
     total_transacoes = len(conta.historico.transacoes)
     transacoes_hoje = len(list(conta.historico.transacoes_do_dia()))
 
@@ -130,12 +147,14 @@ def demo_v4_1():
     print(f"   📈 Total depositado: R$ {total_depositado:.2f}")
     print(f"   📉 Total sacado: R$ {total_sacado:.2f}")
     print(f"   💰 Saldo final: R$ {conta.saldo:.2f}")
+    print(f"   📄 Logs salvos em: {log_file}")
 
     print("\n" + "="*65)
-    print("🎉 DEMO V4.1 CONCLUÍDA COM SUCESSO!")
+    print("🎉 DEMO V4.2 CONCLUÍDA COM SUCESSO!")
     print("✨ Todas as funcionalidades de data/hora estão operacionais!")
     print("⏰ Sistema respeitando limite de 10 transações por dia!")
+    print("📄 Logs sendo salvos em arquivo para auditoria!")
     print("="*65)
 
 if __name__ == "__main__":
-    demo_v4_1()
+    demo()
