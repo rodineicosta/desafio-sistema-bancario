@@ -1,10 +1,8 @@
-# 🏦 Sistema Bancário em Python - Versão 4.1
+# 🏦 Sistema Bancário em Python - Versão 4.2
 
 ## 📖 Descrição do Projeto
 
-Este projeto é parte do desafio **Lidando com Data, Hora e Fuso Horário no Python**, da Formação **Santander 2025 - Back-End com Python**. A **Versão 4.1** implementa o limite de dez (10) transações diárias para uma conta, com exibição de aviso sobre o referido limite excedido para o dia.
-
-A exibição de data e hora no extrato já estava implementada nas versões anteriores ao desafio atual.
+Este projeto é parte do desafio **Manipulando Arquivos**, da Formação **Santander 2025 - Back-End com Python**. A **Versão 4.2** implementa o informações em um arquivo para análise posterior e backup contínuo, modificando o atual decorador de log, que imprime informações no console, para que ele salve essas informações em um arquivo de log, possibilitando uma revisão mais fácil e uma análise mais detalhada das operações dos usuários.
 
 ## ⚡ Funcionalidades
 
@@ -39,12 +37,12 @@ A exibição de data e hora no extrato já estava implementada nas versões ante
 ```python
 @log_transacao
 def registrar(self, conta):
-    # Funcionalidade com log automático.
+    # Funcionalidade com arquivo de log automático.
 ```
 
-- **Função**: Registra automaticamente data/hora de todas as transações;
+- **Função**: Registra automaticamente data/hora (UTC) de todas as transações;
 - **Aplicação**: Todas as funções de transação (depósito, saque, criação de conta, etc.);
-- **Formato**: `🕒 [DD/MM/AAAA HH:MM:SS] Executando 'Nome da Operação'`.
+- **Formato**: `🕒 [AAAA/MM/DD HH:MM:SS] - Função: 'Nome da Operação' executada com argumentos 'nome dos argumentos' e Retornou: 'resultado'`.
 
 #### 🔄 **Gerador de Relatórios (yield)**
 
@@ -193,6 +191,12 @@ Informe o endereço: Rua A, 123 - Centro - São Paulo/SP
 - Melhorado extrato com *timestamps* detalhados;
 - Mantidas todas as funcionalidades v4.0 (decorators/generators/iterators).
 
+### v4.2 - Registro de transações em arquivo de log
+
+- Cria arquivo `log.txt`;
+- Registra transação com data em formato UTC, nome da função, argumentos e retorno;
+- Mantidas todas as funcionalidades da v4.1.
+
 ---
 
 ## 📚 Conceitos Demonstrados
@@ -201,11 +205,14 @@ Informe o endereço: Rua A, 123 - Centro - São Paulo/SP
 
 - **Decorators**: `@log_transacao` com `@functools.wraps`;
 - **Generators**: `yield` para eficiência de memória;
-- **Iterators**: Protocolo `__iter__` e `__next__`.
+- **Iterators**: Protocolo `__iter__` e `__next__`;
+- **Representação**: `__repr__` para definir a representação em string de um objeto;
+- **Arquivos**: `pathlib`, `with`, `open()` e `write()` para manipulação de arquivos.
 
 ### Data/Hora
 
-- **datetime.now()**: Timestamps automáticos;
+- **datetime.now()**: *Timestamps* automáticos;
+- **datetime.now(UTC)**: *Timestamps* em formato *Coordinated Universal Time*;
 - **strftime()**: Formatação personalizada;
 - **Comparação de datas**: Filtragem por período.
 
@@ -219,10 +226,10 @@ Informe o endereço: Rua A, 123 - Centro - São Paulo/SP
 
 ## 🎯 Objetivos Alcançados
 
-- ✅ **Implementação completa** do desafio "Lidando com Data, Hora e Fuso Horário";
-- ✅ **Limite flexível** de 10 transações diárias;
-- ✅ **Controle temporal** preciso das operações;
-- ✅ **Compatibilidade** com funcionalidades v4.0;
+- ✅ **Implementação completa** do desafio "Manipulando Arquivos";
+- ✅ **Criação de arquivo** de log para análise de operações;
+- ✅ **Registro no Decorador** de data/hora, nome da função, argumentos e retorno;
+- ✅ **Novos registros** adicionados ao final do arquivo;
 - ✅ **Código testado** e documentado;
 - ✅ **Arquitetura escalável** para futuras expansões.
 
@@ -270,4 +277,4 @@ Para acompanhar a evolução do desafio da versão anterior, veja o arquivo [REA
 
 ### 🚀 Desenvolvido como parte do Desafio DIO + Santander 2025
 
-Sistema Bancário v4.1 - Lidando com Data, Hora e Fuso Horário no Python
+Sistema Bancário v4.2 - Manipulando Arquivos com Python
