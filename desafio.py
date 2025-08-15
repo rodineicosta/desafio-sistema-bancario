@@ -305,6 +305,7 @@ def menu():
 [6]\tListar Contas
 [7]\tListar Clientes
 [8]\tRelatório de Transações
+[9]\tSistema de Clientes (BD)
 [0]\tSair
 => """
     return input(textwrap.dedent(menu_texto))
@@ -597,6 +598,19 @@ def main():
 
         elif opcao == "8":
             relatorio_transacoes(clientes)
+
+        elif opcao == "9":
+            try:
+                from sistema_clientes import SistemaClientes
+
+                sistema_clientes = SistemaClientes()
+                continuar = sistema_clientes.executar()
+                if not continuar:
+                    break
+            except ImportError:
+                print("❌ Módulo de sistema de clientes não encontrado!")
+            except Exception as e:
+                print(f"❌ Erro ao executar sistema de clientes: {e}")
 
         elif opcao == "0":
             break

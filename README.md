@@ -1,8 +1,8 @@
-# 🏦 Sistema Bancário em Python - Versão 4.3
+# 🏦 Sistema Bancário em Python - Versão 5 (DB API)
 
 ## 📖 Descrição do Projeto
 
-Este projeto é parte do desafio **Gerenciamento de Pacotes, Convenções e Boas Práticas Python**, da Formação **Santander 2025 - Back-End com Python**. A **Versão 4.3** implementa a instalação e o gerenciamento de pacotes, além das correções do código seguindo as convenções da PEP8. Mantendo todas as funcionalidades da versão anterior.
+Este projeto é parte do desafio **Banco de Dados**, da Formação **Santander 2025 - Back-End com Python**. A **Versão 5** implementa o gerencimento de cadastro de clientes Pessoa Física e Pessoa Jurídica através de um banco de dados SQLIte, mantendo todas as funcionalidades da versão anterior.
 
 ## ⚡ Funcionalidades
 
@@ -16,83 +16,70 @@ Este projeto é parte do desafio **Gerenciamento de Pacotes, Convenções e Boas
 - **[6] Listar Contas**: Exibe todas as contas cadastradas usando iterador personalizado
 - **[7] Listar Clientes**: Exibe todos os clientes cadastrados
 - **[8] Relatório de Transações**: Gera relatórios filtrados usando geradores
+- **[9] Sistema de Clientes (BD)**: Gera relatórios filtrados usando geradores
 - **[0] Sair**: Encerra o sistema
+
+### 🗃️ Estrutura do Banco de Dados
+
+#### Tabela: `pessoas_fisicas`
+
+```sql
+CREATE TABLE pessoas_fisicas (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    nome TEXT NOT NULL,
+    cpf TEXT UNIQUE NOT NULL,
+    data_nascimento TEXT NOT NULL,
+    endereco TEXT NOT NULL,
+    telefone TEXT,
+    email TEXT,
+    data_cadastro TEXT NOT NULL,
+    ativo BOOLEAN DEFAULT 1
+);
+```
+
+#### Tabela: `pessoas_juridicas`
+
+```sql
+CREATE TABLE pessoas_juridicas (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    razao_social TEXT NOT NULL,
+    nome_fantasia TEXT,
+    cnpj TEXT UNIQUE NOT NULL,
+    endereco TEXT NOT NULL,
+    telefone TEXT,
+    email TEXT,
+    representante_legal TEXT NOT NULL,
+    data_cadastro TEXT NOT NULL,
+    ativo BOOLEAN DEFAULT 1
+);
+```
 
 ### 🚀 Funcionalidades Avançadas
 
-#### 🕐 **Gerenciamento de Data/Hora**
+### ✅ **Validação de Documentos**
 
-- **Timestamps automáticos**: Todas as transações recebem timestamp automático no formato `dd/mm/aaaa hh:mm:ss`;
-- **Controle diário**: Sistema distingue transações por data para aplicar regras de negócio;
-- **Extrato temporal**: Visualização cronológica de todas as operações.
+- **CPF**: Validação completa usando algoritmo oficial;
+- **CNPJ**: Validação completa usando algoritmo oficial;
+- **Formatação automática**: XXX.XXX.XXX-XX e XX.XXX.XXX/XXXX-XX.
 
-#### 📊 **Limite de Transações Diárias**
+### 💾 **Operações CRUD**
 
-- **10 transações por dia**: Substituição do antigo limite de 3 saques por um limite mais flexível;
-- **Validação centralizada**: Controle realizado na classe `Cliente` via método `realizar_transacao()`;
-- **Mensagens informativas**: Feedback claro sobre status das transações e limites.
+- ✅ **Create**: Inserir novos clientes (PF e PJ);
+- ✅ **Read**: Listar e buscar clientes;
+- ✅ **Update**: Preparado para futuras expansões;
+- ✅ **Delete**: Soft delete (marcar como inativo).
 
-#### 🎯 **Decorador de Log (@log_transacao)**
+### 🔍 **Busca e Listagem**
 
-```python
-@log_transacao
-def registrar(self, conta):
-    # Funcionalidade com arquivo de log automático.
-```
+- **Listar por tipo**: Pessoas físicas ou jurídicas separadamente;
+- **Listar todos**: Visão consolidada de todos os clientes;
+- **Busca por documento**: CPF ou CNPJ;
+- **Ordenação**: Alfabética por nome/razão social.
 
-- **Função**: Registra automaticamente data/hora (UTC) de todas as transações;
-- **Aplicação**: Todas as funções de transação (depósito, saque, criação de conta, etc.);
-- **Formato**: `🕒 [AAAA/MM/DD HH:MM:SS] - Função: 'Nome da Operação' executada com argumentos 'nome dos argumentos' e Retornou: 'resultado'`.
+### 📊 **Estatísticas**
 
-#### 🔄 **Gerador de Relatórios (yield)**
-
-```python
-def gerar_relatorio(self):
-    for transacao in self._transacoes:
-        yield transacao
-
-def transacoes_do_dia(self, data=None):
-    for transacao in self._transacoes:
-        if data_transacao == data_hoje:
-            yield transacao
-```
-
-- **Função**: Permite iterar sobre transações com filtros específicos;
-- **Filtros Disponíveis**:
-  - Todas as transações;
-  - Apenas depósitos;
-  - Apenas saques;
-  - Transações por data específica.
-- **Vantagem**: Economia de memória com lazy evaluation.
-
-#### 🔍 **Iterador Personalizado (ContaIterador)**
-
-```python
-# Permite iteração sobre contas com formatação personalizada.
-for conta_info in ContaIterador(contas):
-    print(conta_info)
-```
-
-- **Classe**: `ContaIterador`;
-- **Função**: Itera sobre todas as contas retornando dados estruturados;
-- **Dados Retornados**: agência, número, titular, saldo, tipo de conta;
-- **Uso**: Sistema de listagem de contas otimizado.
-
-## 🚀 Tecnologias Utilizadas
-
-- **Python 3.8+**;
-- **ABC (Abstract Base Classes)** - Para classes abstratas;
-- **`datetime`** - Para manipulação de data/hora;
-- **`textwrap`** - Para formatação do menu;
-- **`functools`** - Para Decorators avançados;
-- **POO** - Programação Orientada a Objetos;
-- **Type Hints** - Para melhor documentação do código.
-
-## 📋 Pré-requisitos
-
-- Python 3.8 ou superior;
-- Conhecimento básico de POO;
-- Terminal/Prompt de comando.
+- **Contadores**: Total de PF, PJ e geral;
+- **Relatórios**: Informações do sistema.
 
 ## 🔧 Como Executar
 
@@ -103,58 +90,123 @@ git clone https://github.com/rodineicosta/desafio-sistema-bancario.git
 cd desafio-sistema-bancario
 ```
 
-### 2️⃣ Execute o sistema
+### 2️⃣ Execução Independente
+
+```bash
+python sistema_clientes.py
+```
+
+### 3️⃣ Integrado ao Sistema Bancário
 
 ```bash
 python desafio.py
+# Escolher opção [9] Sistema de Clientes (BD).
 ```
 
-### 3️⃣ Demonstração Completa
+### 4️⃣ Executar Testes
 
 ```bash
-python demo_v4.py
+python teste_database.py
 ```
 
-### 4️⃣ Testes Automatizados
-
-```bash
-python teste_v4.py
-```
-
-## 💡 Como Usar
-
-### 🔸 Fluxo Recomendado
-
-1. **Criar Cliente**: Use `[5]` para cadastrar um novo cliente;
-2. **Criar Conta**: Use `[4]` para criar conta vinculada ao cliente;
-3. **Realizar Depósito**: Use `[1]` para adicionar fundos;
-4. **Realizar Saques**: Use `[2]` para sacar dinheiro;
-5. **Verificar Extrato**: Use `[3]` para ver movimentações;
-6. **Relatório de Transações**: Use `[8]` para ver relatórios.
-
-### 🔸 Exemplo de Uso
+## 📋 Menu do Novo Sistema de Clientes (BD)
 
 ```
-```text
-================ MENU ================
-[1]    Depositar
-[2]    Sacar
-[3]    Extrato
-[4]    Nova Conta
-[5]    Novo Cliente
-[6]    Listar Contas
-[7]    Listar Clientes
-[8]    Relatório de Transações
+================ SISTEMA DE CLIENTES ================
+[1]    Cadastrar Pessoa Física
+[2]    Cadastrar Pessoa Jurídica
+[3]    Listar Pessoas Físicas
+[4]    Listar Pessoas Jurídicas
+[5]    Listar Todos os Clientes
+[6]    Buscar Cliente por Documento
+[7]    Estatísticas do Sistema
+[8]    Voltar ao Menu Principal
 [0]    Sair
-=> 5
-
-Informe o CPF: 12345678901
-Informe o nome completo: João Silva
-Informe a data de nascimento (dd/mm/aaaa): 01/01/1990
-Informe o endereço: Rua A, 123 - Centro - São Paulo/SP
-
-=== Cliente criado com sucesso! ===
 ```
+
+## 🧪 Exemplos de Uso
+
+### **Cadastro de Pessoa Física**
+
+```
+Nome completo: João da Silva
+CPF: 123.456.789-09
+Data de nascimento: 15/03/1985
+Endereço: Rua das Flores, 123 - São Paulo/SP
+Telefone: (11) 99999-9999
+E-mail: joao@email.com
+```
+
+### **Cadastro de Pessoa Jurídica**
+
+```
+Razão Social: Empresa ABC Ltda
+Nome Fantasia: ABC Tech
+CNPJ: 12.345.678/0001-95
+Endereço: Av. Paulista, 1000 - São Paulo/SP
+Representante Legal: Maria Santos
+Telefone: (11) 3333-3333
+E-mail: contato@abc.com
+```
+
+## 🔒 Validações Implementadas
+
+### **CPF**
+
+- ✅ Formato numérico (11 dígitos);
+- ✅ Dígitos verificadores corretos;
+- ✅ Rejeição de sequências repetidas;
+- ✅ Unicidade no banco de dados.
+
+### **CNPJ**
+
+- ✅ Formato numérico (14 dígitos);
+- ✅ Dígitos verificadores corretos;
+- ✅ Rejeição de sequências repetidas;
+- ✅ Unicidade no banco de dados.
+
+### **Campos Obrigatórios**
+
+- **PF**: Nome, CPF, Data de Nascimento, Endereço;
+- **PJ**: Razão Social, CNPJ, Endereço, Representante Legal.
+
+## 🛠️ Tecnologias Utilizadas
+
+- **Python 3.8+**
+- **SQLite3** (banco de dados);
+- **Regex** (validação de entrada);
+- **Pathlib** (manipulação de caminhos);
+- **Datetime** (timestamps);
+- **Textwrap** (formatação de saída).
+
+## 📈 Benefícios
+
+### **Para o Banco**
+
+- ✅ **Integridade de dados** garantida;
+- ✅ **Validação automática** de documentos;
+- ✅ **Histórico completo** de cadastros;
+- ✅ **Busca eficiente** por clientes;
+- ✅ **Relatórios estatísticos** instantâneos.
+
+### **Para os Usuários**
+
+- ✅ **Interface intuitiva** e organizada;
+- ✅ **Feedback claro** em todas as operações;
+- ✅ **Validação em tempo real**;
+- ✅ **Formatação automática** de documentos;
+- ✅ **Navegação simples** entre funcionalidades.
+
+## 🎯 Integração com Sistema Bancário Existente
+
+O sistema de clientes está **perfeitamente integrado** ao sistema bancário principal:
+
+1. **Acesso via menu principal** (opção 9);
+2. **Retorno automático** ao menu bancário;
+3. **Compartilhamento de dados** (preparado para futuras integrações);
+4. **Consistência visual** e de funcionalidades.
+
+---
 
 ## 🔄 Evolução do Projeto
 
@@ -201,11 +253,29 @@ Informe o endereço: Rua A, 123 - Centro - São Paulo/SP
 
 - Ordenamento correto das importações;
 - Espaçamentos entre linhas;
-- Limite máximo de caracteres por linha.
+- Limite máximo de caracteres por linha;
+- Mantidas todas as funcionalidades da v4.2.
+
+
+### v5 - Banco de Dados
+
+- Banco de dados SQLite criado com tabelas para PF e PJ;
+- Inserção de dados com validação completa;
+- Listagem categorizada de clientes;
+- Validação de CPF/CNPJ usando algoritmos oficiais;
+- Interface intuitiva com feedback claro;
+- Mantidas todas as funcionalidades da v4.3.
 
 ---
 
 ## 📚 Conceitos Demonstrados
+
+### Banco de Dados
+
+- **Arquivo**: Criação de arquivo para armazenamento das informações;
+- **Tabelas**: Criação de tabelas para cadastro de PF e PJ;
+- **Validação**: Garantia de unicidade dos campos CPF e CNPJ, com validação;
+- **Consultas**: Listagem de clientes por documento, por categoria e geral.
 
 ### Python Avançado
 
@@ -236,11 +306,10 @@ Informe o endereço: Rua A, 123 - Centro - São Paulo/SP
 
 ## 🎯 Objetivos Alcançados
 
-- ✅ **Implementação completa** do desafio "Manipulando Arquivos";
-- ✅ **Criação de arquivo** de log para análise de operações;
-- ✅ **Registro no Decorador** de data/hora, nome da função, argumentos e retorno;
-- ✅ **Novos registros** adicionados ao final do arquivo;
-- ✅ **Boas Práticas** com código padronizado, conforme convenções da PEP8;
+- ✅ **Implementação completa** do desafio "Banco de Dados";
+- ✅ **Criação de arquivo** de de banco de dados para armazenamento de informações;
+- ✅ **Inclusão de registros** em tabelas separadas por categoria, com validação de dados;
+- ✅ **Recuperação de informações** detalhadas por consultas ao banco de dados;
 - ✅ **Código testado** e documentado;
 - ✅ **Arquitetura escalável** para futuras expansões.
 
@@ -280,12 +349,12 @@ Este projeto está sob a licença MIT. Veja o arquivo [LICENSE](LICENSE) para ma
 - ✅ **Limites de saque** rigorosamente controlados;
 - ✅ **Entrada flexível** com validação robusta.
 
-## 🔧 Recursos Implementados na v3.0
+## 🔧 Recursos Implementados na v4.3
 
-Para acompanhar a evolução do desafio da versão anterior, veja o arquivo [README v3](https://github.com/rodineicosta/desafio-sistema-bancario/blob/v3/README.md) para mais detalhes.
+Para acompanhar a evolução do desafio da versão anterior, veja o arquivo [README v4.3](https://github.com/rodineicosta/desafio-sistema-bancario/blob/v4.3/boas-praticas/README.md) para mais detalhes.
 
 ---
 
 ### 🚀 Desenvolvido como parte do Desafio DIO + Santander 2025
 
-Sistema Bancário v4.3 - Gerenciamento de Pacotes, Convenções e Boas Práticas Python
+Sistema Bancário v5 (DB API) - Banco de Dados com Python
